@@ -1,0 +1,84 @@
+name: Test case
+description: A manual or automated check of one behaviour
+title: "[ID] "
+labels: ["test-case"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Replace `ID` in the title with the case ID, for example `[AUTH-01] Successful login`.
+        One issue = one check. Tasks go in a regular issue, not here.
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Auth
+        - Home
+        - Access
+        - Panel
+        - Roles
+        - Activation
+        - User creation
+        - Audit
+        - Files
+        - Folders
+        - Security
+        - S3
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options: [P1, P2, P3]
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [Positive, Negative, Edge, Security]
+    validations:
+      required: true
+  - type: textarea
+    id: preconditions
+    attributes:
+      label: Preconditions
+  - type: input
+    id: data
+    attributes:
+      label: Test data
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: input
+    id: requirement
+    attributes:
+      label: Requirement
+  - type: dropdown
+    id: automation
+    attributes:
+      label: Automation
+      options: [Manual, "E2E (Playwright)", "pytest (app)"]
+    validations:
+      required: true
+  - type: input
+    id: autotest
+    attributes:
+      label: Automated test
+      description: file::test, when the case is automated
+      placeholder: tests/test_auth.py::test_login_opens_home_and_header_leads_to_files

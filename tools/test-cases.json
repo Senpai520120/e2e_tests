@@ -1,0 +1,1665 @@
+[
+  {
+    "id": "AUTH-01",
+    "title": "Успешный вход с верными данными",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Браузер без активной сессии",
+    "data": "demo_user / demo-password-123",
+    "steps": [
+      "Открыть /login/",
+      "Ввести логин и пароль",
+      "Нажать «Sign in»"
+    ],
+    "expected": "Открыта главная /. Заголовок «You are signed in as demo_user», в списке ролей — user.",
+    "requirement": "Задание 1: п.1, п.9",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_login_opens_home_and_header_leads_to_files"
+  },
+  {
+    "id": "AUTH-02",
+    "title": "Вход с неверным паролем",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "demo_user / wrong-password",
+    "steps": [
+      "Открыть /login/",
+      "Ввести данные",
+      "Нажать «Sign in»"
+    ],
+    "expected": "Остались на /login/. Показана ошибка «Please enter a correct username and password…». Вход не выполнен.",
+    "requirement": "Задание 1: п.4",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_wrong_password_and_unknown_user_get_the_same_error"
+  },
+  {
+    "id": "AUTH-03",
+    "title": "Несуществующий логин даёт ту же ошибку, что и неверный пароль",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Security",
+    "preconditions": "Браузер без активной сессии",
+    "data": "no-such-user-here / demo-password-123",
+    "steps": [
+      "Выполнить AUTH-02 и запомнить текст ошибки",
+      "Открыть /login/ заново",
+      "Войти с несуществующим логином"
+    ],
+    "expected": "Текст ошибки полностью совпадает с AUTH-02. По ответу нельзя понять, существует ли пользователь.",
+    "requirement": "Задание 1: п.4",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_wrong_password_and_unknown_user_get_the_same_error"
+  },
+  {
+    "id": "AUTH-04",
+    "title": "Деактивированный пользователь не может войти",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "demo_inactive / demo-password-123",
+    "steps": [
+      "Открыть /login/",
+      "Ввести данные",
+      "Нажать «Sign in»"
+    ],
+    "expected": "Остались на /login/, показана ошибка входа. Вход не выполнен.",
+    "requirement": "Задание 1: п.8",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_inactive_user_cannot_sign_in"
+  },
+  {
+    "id": "AUTH-05",
+    "title": "Вход с пустыми полями",
+    "module": "Auth",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Открыть /login/",
+      "Оставить поля пустыми",
+      "Нажать «Sign in»"
+    ],
+    "expected": "Форма не отправлена (подсветка обязательных полей) или показана ошибка. Вход не выполнен.",
+    "requirement": "Задание 1: п.1",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-06",
+    "title": "Логин чувствителен к регистру",
+    "module": "Auth",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "DEMO_USER / demo-password-123",
+    "steps": [
+      "Открыть /login/",
+      "Ввести логин в верхнем регистре и верный пароль",
+      "Нажать «Sign in»"
+    ],
+    "expected": "Вход не выполнен, показана стандартная ошибка входа.",
+    "requirement": "Задание 1: п.4",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-07",
+    "title": "Выход из системы",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Нажать кнопку выхода в шапке",
+      "Открыть /"
+    ],
+    "expected": "После выхода / перенаправляет на /login/?next=/.",
+    "requirement": "Задание 1: п.2",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_after_logout_files_require_login_again"
+  },
+  {
+    "id": "AUTH-08",
+    "title": "Выход через GET не работает",
+    "module": "Auth",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Открыть /logout/ в адресной строке",
+      "Открыть /"
+    ],
+    "expected": "Ответ на /logout/ — 405 Method Not Allowed. Пользователь остался залогинен, / открывается.",
+    "requirement": "Задание 1: п.2 (LogoutView, POST only)",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-09",
+    "title": "Аноним на главной перенаправляется на вход",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Открыть /"
+    ],
+    "expected": "Адрес /login/?next=/, виден заголовок «Sign in».",
+    "requirement": "Задание 1: п.9",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_auth.py"
+  },
+  {
+    "id": "AUTH-10",
+    "title": "После входа возврат на страницу из next",
+    "module": "Auth",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Браузер без активной сессии",
+    "data": "demo_admin / demo-password-123",
+    "steps": [
+      "Открыть /manage/",
+      "Убедиться, что адрес /login/?next=/manage/",
+      "Войти"
+    ],
+    "expected": "После входа открыта /manage/, а не главная.",
+    "requirement": "Задание 1: LOGIN_URL / next",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-11",
+    "title": "Параметр next не уводит на чужой сайт",
+    "module": "Auth",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Браузер без активной сессии",
+    "data": "demo_user / demo-password-123; next=https://evil.example/",
+    "steps": [
+      "Открыть /login/?next=https://evil.example/",
+      "Войти"
+    ],
+    "expected": "После входа открыта главная / этого приложения. Перехода на evil.example нет.",
+    "requirement": "Безопасность авторизации",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-12",
+    "title": "Сессия сохраняется между вкладками и после перезагрузки",
+    "module": "Auth",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Обновить страницу (F5)",
+      "Открыть / в новой вкладке того же браузера"
+    ],
+    "expected": "Пользователь остаётся залогинен в обеих вкладках.",
+    "requirement": "Задание 1: сессии",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUTH-13",
+    "title": "Пароли хранятся в виде хэша",
+    "module": "Auth",
+    "priority": "P1",
+    "type": "Security",
+    "preconditions": "Доступ к БД приложения",
+    "data": "—",
+    "steps": [
+      "Выполнить: select username, password from auth_user limit 5;"
+    ],
+    "expected": "В колонке password значения вида pbkdf2_sha256$<итерации>$<соль>$<хэш>. Открытых паролей нет.",
+    "requirement": "Задание 1: DoD «пароли захешированы»",
+    "automation": "pytest (app)",
+    "autotest": "test_auth.py::test_password_is_stored_hashed"
+  },
+  {
+    "id": "AUTH-14",
+    "title": "POST формы входа без CSRF-токена отклоняется",
+    "module": "Auth",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Отправить POST на /login/ без csrfmiddlewaretoken (curl или DevTools)"
+    ],
+    "expected": "Ответ 403 (CSRF verification failed). Вход не выполнен.",
+    "requirement": "Задание 1: CSRF",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_roles.py (CSRF)"
+  },
+  {
+    "id": "HOME-01",
+    "title": "Главная показывает имя и роли пользователя",
+    "module": "Home",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть /"
+    ],
+    "expected": "Заголовок «You are signed in as demo_admin», в ролях — admin.",
+    "requirement": "Задание 1: п.9",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_login_opens_home_and_header_leads_to_files"
+  },
+  {
+    "id": "HOME-02",
+    "title": "Главная для пользователя без ролей",
+    "module": "Home",
+    "priority": "P3",
+    "type": "Edge",
+    "preconditions": "Выполнен вход как demo_staff (без групп)",
+    "data": "—",
+    "steps": [
+      "Открыть /"
+    ],
+    "expected": "Страница открывается без ошибки, имя demo_staff, список ролей пуст или указано, что ролей нет.",
+    "requirement": "Задание 1: п.9",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "HOME-03",
+    "title": "Ссылка на панель видна только админам",
+    "module": "Home",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "—",
+    "data": "demo_user, demo_admin, demo_staff",
+    "steps": [
+      "Войти demo_user, осмотреть шапку",
+      "Выйти, войти demo_admin, осмотреть шапку",
+      "Повторить для demo_staff"
+    ],
+    "expected": "У demo_user ссылки на панель нет. У demo_admin и demo_staff есть.",
+    "requirement": "Задание 1: контекст is_panel_admin",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "HOME-04",
+    "title": "Ссылка «Files» в шапке ведёт в файловый менеджер",
+    "module": "Home",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Нажать «Files» в шапке"
+    ],
+    "expected": "Открыт /files/, заголовок «Files».",
+    "requirement": "ТЗ E2E: вход → переход в раздел",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_login_opens_home_and_header_leads_to_files"
+  },
+  {
+    "id": "ACC-01",
+    "title": "Аноним на /manage/ перенаправляется на вход",
+    "module": "Access",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Адрес /login/?next=/manage/.",
+    "requirement": "Задание 1: доступ к /manage/",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_access_control.py"
+  },
+  {
+    "id": "ACC-02",
+    "title": "Обычный пользователь получает 403 на /manage/",
+    "module": "Access",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Ответ 403, показана страница «доступ запрещён».",
+    "requirement": "Задание 1: DoD «обычный юзер → 403»",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_access.py::test_regular_user_gets_403_on_panel"
+  },
+  {
+    "id": "ACC-03",
+    "title": "Участник группы admin открывает панель",
+    "module": "Access",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Ответ 200, виден список пользователей.",
+    "requirement": "Задание 1: доступ к /manage/",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_access.py::test_admin_opens_panel"
+  },
+  {
+    "id": "ACC-04",
+    "title": "Пользователь с is_staff без группы открывает панель",
+    "module": "Access",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_staff",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Ответ 200, виден список пользователей.",
+    "requirement": "Задание 1: «admin или is_staff»",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ACC-05",
+    "title": "Суперпользователь открывает панель",
+    "module": "Access",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Создан суперпользователь через createsuperuser, выполнен вход",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Ответ 200.",
+    "requirement": "Задание 1: доступ к /manage/",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_access_control.py"
+  },
+  {
+    "id": "ACC-06",
+    "title": "Обычный пользователь не открывает внутренние страницы панели",
+    "module": "Access",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "/manage/roles/, /manage/audit/, /manage/users/new/, /manage/users/<pk>/roles/",
+    "steps": [
+      "Открыть по очереди каждый адрес"
+    ],
+    "expected": "На каждом адресе ответ 403.",
+    "requirement": "Задание 1: контроль доступа через миксин",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ACC-07",
+    "title": "Отзыв роли admin закрывает панель сразу",
+    "module": "Access",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Временный пользователь с ролью admin; два независимых браузера",
+    "data": "—",
+    "steps": [
+      "Браузер 1: войти временным пользователем, открыть /manage/",
+      "Браузер 2 (demo_admin): снять с него роль admin",
+      "Браузер 1: обновить /manage/"
+    ],
+    "expected": "Шаг 3: ответ 403 без повторного входа.",
+    "requirement": "Задание 1: проверка прав на каждом запросе",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_access_control.py"
+  },
+  {
+    "id": "ACC-08",
+    "title": "Страница 403 оформлена шаблоном приложения",
+    "module": "Access",
+    "priority": "P3",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Показан шаблон приложения (с шапкой и понятным текстом), а не голая страница Django.",
+    "requirement": "README: шаблоны 403/404/500",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ACC-09",
+    "title": "Несуществующий адрес возвращает 404 шаблоном приложения",
+    "module": "Access",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Приложение запущено с DEBUG=False (docker compose)",
+    "data": "/no-such-page/",
+    "steps": [
+      "Открыть /no-such-page/"
+    ],
+    "expected": "Ответ 404, показан шаблон приложения, без трассировки и отладочной информации.",
+    "requirement": "README: шаблоны 403/404/500",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ACC-10",
+    "title": "Стандартный /admin/ открывается только is_staff",
+    "module": "Access",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть /admin/"
+    ],
+    "expected": "demo_admin (группа admin, без is_staff) перенаправлен на форму входа /admin/. Кастомная панель /manage/ при этом доступна.",
+    "requirement": "Задание 1: /admin/ оставлен как референс",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-01",
+    "title": "Список пользователей со всеми колонками",
+    "module": "Panel",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/"
+    ],
+    "expected": "Таблица пользователей: username, email, имя, роли, активность, флаг is_staff. У demo_user роль user, активен; у demo_inactive — неактивен.",
+    "requirement": "Задание 1: п.5",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-02",
+    "title": "Поиск по имени пользователя",
+    "module": "Panel",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "q = demo_user05",
+    "steps": [
+      "Ввести значение в поиск",
+      "Запустить поиск"
+    ],
+    "expected": "В результатах только demo_user05. Адрес содержит ?q=demo_user05.",
+    "requirement": "Бонус: поиск",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-03",
+    "title": "Поиск без результатов",
+    "module": "Panel",
+    "priority": "P3",
+    "type": "Edge",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "q = zzz-nothing",
+    "steps": [
+      "Ввести значение в поиск",
+      "Запустить поиск"
+    ],
+    "expected": "Пустой список или сообщение «ничего не найдено». Ошибки нет.",
+    "requirement": "Бонус: поиск",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-04",
+    "title": "Переход по страницам списка",
+    "module": "Panel",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; демо-пользователи созданы с --extra (по умолчанию)",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/",
+      "Перейти на следующую страницу",
+      "Вернуться на предыдущую"
+    ],
+    "expected": "Шаг 2: другой набор пользователей, адрес ?page=2. Шаг 3: снова первая страница.",
+    "requirement": "Бонус: пагинация",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-05",
+    "title": "Поиск сохраняется при переходе по страницам",
+    "module": "Panel",
+    "priority": "P3",
+    "type": "Edge",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "q = demo_user",
+    "steps": [
+      "Выполнить поиск, дающий больше одной страницы",
+      "Перейти на следующую страницу"
+    ],
+    "expected": "На второй странице адрес содержит и q, и page, в списке только совпадения с поиском.",
+    "requirement": "Бонус: поиск + пагинация",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "PNL-06",
+    "title": "Несуществующий номер страницы",
+    "module": "Panel",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "?page=9999, ?page=abc",
+    "steps": [
+      "Открыть /manage/?page=9999",
+      "Открыть /manage/?page=abc"
+    ],
+    "expected": "Ответ 404 (или первая/последняя страница). Не 500.",
+    "requirement": "Бонус: пагинация",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLES-01",
+    "title": "Страница ролей со счётчиками",
+    "module": "Roles",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть /manage/roles/"
+    ],
+    "expected": "Показаны роли admin и user с количеством участников.",
+    "requirement": "Задание 1: п.6",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLES-02",
+    "title": "Счётчик роли меняется после выдачи",
+    "module": "Roles",
+    "priority": "P3",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "—",
+    "steps": [
+      "Запомнить счётчик admin на /manage/roles/",
+      "Выдать роль admin временному пользователю",
+      "Снова открыть /manage/roles/"
+    ],
+    "expected": "Счётчик admin увеличился на 1.",
+    "requirement": "Задание 1: п.6",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-01",
+    "title": "Выдать роль admin",
+    "module": "Roles",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "роль admin",
+    "steps": [
+      "Открыть форму ролей временного пользователя",
+      "Отметить admin",
+      "Сохранить",
+      "В новой сессии войти временным пользователем и открыть /manage/"
+    ],
+    "expected": "В списке у пользователя роль admin. Шаг 4: ответ 200.",
+    "requirement": "Задание 1: п.7, DoD «сохраняется в БД»",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_roles.py"
+  },
+  {
+    "id": "ROLE-02",
+    "title": "Снять роль admin",
+    "module": "Roles",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; временный пользователь с ролью admin",
+    "data": "—",
+    "steps": [
+      "Открыть форму ролей",
+      "Снять admin",
+      "Сохранить",
+      "В новой сессии войти этим пользователем и открыть /manage/"
+    ],
+    "expected": "Роли admin в списке нет. Шаг 4: ответ 403.",
+    "requirement": "Задание 1: п.7",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_roles.py"
+  },
+  {
+    "id": "ROLE-03",
+    "title": "Выдать обе роли сразу",
+    "module": "Roles",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "роли admin + user",
+    "steps": [
+      "Открыть форму ролей",
+      "Отметить admin и user",
+      "Сохранить"
+    ],
+    "expected": "В списке у пользователя обе роли.",
+    "requirement": "Задание 1: п.7",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-04",
+    "title": "Снять все роли",
+    "module": "Roles",
+    "priority": "P2",
+    "type": "Edge",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "—",
+    "steps": [
+      "Открыть форму ролей",
+      "Снять все отметки",
+      "Сохранить"
+    ],
+    "expected": "У пользователя нет ролей, страница без ошибки. Его главная показывает пустой список ролей.",
+    "requirement": "Задание 1: п.7",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-05",
+    "title": "Отмена формы ролей",
+    "module": "Roles",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "—",
+    "steps": [
+      "Открыть форму ролей",
+      "Изменить отметки",
+      "Нажать отмену"
+    ],
+    "expected": "Роли не изменились, новой записи в аудите нет.",
+    "requirement": "Задание 1: п.7",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-06",
+    "title": "Нельзя снять admin с самого себя",
+    "module": "Roles",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть форму ролей demo_admin",
+      "Снять admin",
+      "Сохранить"
+    ],
+    "expected": "Изменение отклонено с понятной ошибкой. demo_admin остался с ролью admin и доступом к /manage/.",
+    "requirement": "Защита от потери доступа",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-07",
+    "title": "Форма ролей несуществующего пользователя",
+    "module": "Roles",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "/manage/users/999999/roles/",
+    "steps": [
+      "Открыть адрес"
+    ],
+    "expected": "Ответ 404. Не 500.",
+    "requirement": "Задание 1: п.7",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ROLE-08",
+    "title": "Изменение ролей без CSRF-токена отклоняется",
+    "module": "Roles",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Отправить POST формы ролей без csrfmiddlewaretoken"
+    ],
+    "expected": "Ответ 403, роли не изменились.",
+    "requirement": "Задание 1: CSRF",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_roles.py"
+  },
+  {
+    "id": "ACT-01",
+    "title": "Деактивация пользователя",
+    "module": "Activation",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "—",
+    "steps": [
+      "Деактивировать временного пользователя в списке",
+      "В новой сессии попробовать войти им"
+    ],
+    "expected": "В списке статус «неактивен». Вход не выполнен, показана ошибка входа.",
+    "requirement": "Задание 1: п.8",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_panel.py"
+  },
+  {
+    "id": "ACT-02",
+    "title": "Повторная активация",
+    "module": "Activation",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; деактивированный временный пользователь",
+    "data": "—",
+    "steps": [
+      "Активировать пользователя",
+      "В новой сессии войти им"
+    ],
+    "expected": "Статус «активен», вход успешен.",
+    "requirement": "Задание 1: п.8",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_panel.py"
+  },
+  {
+    "id": "ACT-03",
+    "title": "Деактивация завершает активную сессию",
+    "module": "Activation",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Через панель создан временный пользователь e2e-user-<id> без роли admin; два независимых браузера",
+    "data": "—",
+    "steps": [
+      "Браузер 1: войти временным пользователем",
+      "Браузер 2 (demo_admin): деактивировать его",
+      "Браузер 1: обновить /"
+    ],
+    "expected": "Шаг 3: перенаправление на /login/, пользователь больше не авторизован.",
+    "requirement": "Задание 1: п.8",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "ACT-04",
+    "title": "Переключение активности через GET не работает",
+    "module": "Activation",
+    "priority": "P3",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "/manage/users/<pk>/toggle-active/",
+    "steps": [
+      "Открыть адрес в адресной строке"
+    ],
+    "expected": "Ответ 405. Статус пользователя не изменился.",
+    "requirement": "README: toggle-active (POST)",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-01",
+    "title": "Создание пользователя с корректными данными",
+    "module": "User creation",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "логин e2e-user-<id>, пароль E2e-Strong-Pass-2026!",
+    "steps": [
+      "Открыть /manage/users/new/",
+      "Заполнить логин и пароль дважды",
+      "Сохранить",
+      "В новой сессии войти этим пользователем"
+    ],
+    "expected": "Пользователь есть в списке. Вход успешен.",
+    "requirement": "Бонус: создание пользователей",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_panel.py"
+  },
+  {
+    "id": "USR-02",
+    "title": "Слишком простой пароль",
+    "module": "User creation",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "пароль password123",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка валидатора (слишком распространённый пароль). Пользователь не создан.",
+    "requirement": "AUTH_PASSWORD_VALIDATORS",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-03",
+    "title": "Пароль из одних цифр",
+    "module": "User creation",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "пароль 1234567890",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка «пароль полностью числовой». Пользователь не создан.",
+    "requirement": "AUTH_PASSWORD_VALIDATORS",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-04",
+    "title": "Слишком короткий пароль",
+    "module": "User creation",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "пароль Ab1!",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка о минимальной длине (8 символов). Пользователь не создан.",
+    "requirement": "AUTH_PASSWORD_VALIDATORS",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-05",
+    "title": "Пароль похож на логин",
+    "module": "User creation",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "логин e2e-user-abc, пароль e2e-user-abc1",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка «пароль слишком похож на имя пользователя». Пользователь не создан.",
+    "requirement": "AUTH_PASSWORD_VALIDATORS",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-06",
+    "title": "Пароли не совпадают",
+    "module": "User creation",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "пароль и подтверждение разные",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка о несовпадении паролей. Пользователь не создан.",
+    "requirement": "UserCreationForm",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-07",
+    "title": "Логин уже занят",
+    "module": "User creation",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "логин demo_user",
+    "steps": [
+      "Заполнить форму с корректным паролем",
+      "Сохранить"
+    ],
+    "expected": "Ошибка «пользователь с таким именем уже существует». Дубликат не создан.",
+    "requirement": "UserCreationForm",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-08",
+    "title": "Недопустимые символы в логине",
+    "module": "User creation",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "логин «user name» (с пробелом)",
+    "steps": [
+      "Заполнить форму",
+      "Сохранить"
+    ],
+    "expected": "Ошибка валидации логина. Пользователь не создан.",
+    "requirement": "UserCreationForm",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "USR-09",
+    "title": "Пустые обязательные поля",
+    "module": "User creation",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход как demo_admin",
+    "data": "—",
+    "steps": [
+      "Открыть форму",
+      "Сохранить без заполнения"
+    ],
+    "expected": "Подсвечены обязательные поля или показаны ошибки. Пользователь не создан.",
+    "requirement": "UserCreationForm",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "AUD-01",
+    "title": "Выдача роли записывается в аудит",
+    "module": "Audit",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; Через панель создан временный пользователь e2e-user-<id> без роли admin",
+    "data": "роль user",
+    "steps": [
+      "Выдать роль временному пользователю",
+      "Открыть /manage/audit/"
+    ],
+    "expected": "Есть запись: кто (demo_admin), кому (временный пользователь), действие granted, роль user, дата и время.",
+    "requirement": "Бонус: аудит-лог",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_roles.py"
+  },
+  {
+    "id": "AUD-02",
+    "title": "Снятие роли записывается в аудит",
+    "module": "Audit",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_admin; временный пользователь с ролью user",
+    "data": "—",
+    "steps": [
+      "Снять роль",
+      "Открыть /manage/audit/"
+    ],
+    "expected": "Есть запись с действием revoked для этого пользователя и роли.",
+    "requirement": "Бонус: аудит-лог",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FM-01",
+    "title": "Аноним на /files/ перенаправляется на вход",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Negative",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Открыть /files/"
+    ],
+    "expected": "Адрес /login/?next=/files/, виден заголовок «Sign in». Не 200 и не голая ошибка.",
+    "requirement": "ТЗ E2E: негативные сценарии",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_anonymous_is_redirected_from_files_to_login"
+  },
+  {
+    "id": "FM-02",
+    "title": "Аноним по прямой ссылке на папку",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Браузер без активной сессии",
+    "data": "/files/?path=docs",
+    "steps": [
+      "Открыть адрес"
+    ],
+    "expected": "Перенаправление на /login/.",
+    "requirement": "ТЗ Files: анонимный доступ закрыт",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_auth.py::test_anonymous_cannot_open_nested_folder_by_link"
+  },
+  {
+    "id": "FM-03",
+    "title": "Файлы доступны любому залогиненному",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Открыть /files/"
+    ],
+    "expected": "Ответ 200, виден заголовок «Files».",
+    "requirement": "ТЗ Files: выбранная схема доступа",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_access.py::test_regular_user_can_open_files"
+  },
+  {
+    "id": "FM-04",
+    "title": "Список содержимого с колонками",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "файл sample.txt внутри папки",
+    "steps": [
+      "Загрузить файл",
+      "Осмотреть строку файла"
+    ],
+    "expected": "У записи видны имя, тип (file), размер и дата изменения.",
+    "requirement": "ТЗ Files: просмотр",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_uploaded_file_shows_up_in_listing (частично)"
+  },
+  {
+    "id": "FM-05",
+    "title": "Пустая папка",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Edge",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Осмотреть только что созданную папку"
+    ],
+    "expected": "Показано сообщение «Folder is empty».",
+    "requirement": "ТЗ Files: просмотр",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_nested_folder_and_breadcrumbs"
+  },
+  {
+    "id": "FLD-01",
+    "title": "Создать папку, вложенную папку и вернуться по крошкам",
+    "module": "Folders",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "папка e2e-nested-<id>",
+    "steps": [
+      "Создать папку",
+      "Зайти в неё",
+      "Нажать в крошках на имя рабочей папки",
+      "Нажать на первую крошку (корень)"
+    ],
+    "expected": "1: папка в списке. 2: «Folder is empty». 3: текущая крошка — рабочая папка, вложенная видна. 4: открыт корень, рабочая папка видна.",
+    "requirement": "ТЗ E2E: папки и крошки",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_nested_folder_and_breadcrumbs"
+  },
+  {
+    "id": "FLD-02",
+    "title": "Папка с занятым именем не создаётся",
+    "module": "Folders",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "папка e2e-duplicate-<id>",
+    "steps": [
+      "Создать папку",
+      "Создать папку с тем же именем"
+    ],
+    "expected": "Сообщение «already exists». Папка с этим именем одна.",
+    "requirement": "ТЗ E2E: негативные сценарии",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_folder_with_taken_name_is_not_created_twice"
+  },
+  {
+    "id": "FLD-03",
+    "title": "Отмена удаления папки",
+    "module": "Folders",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Создать папку",
+      "Нажать «Delete <имя>»",
+      "На странице подтверждения нажать отмену"
+    ],
+    "expected": "Папка осталась в списке.",
+    "requirement": "ТЗ E2E: «отменил и осталось»",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_cancelling_folder_deletion_keeps_it"
+  },
+  {
+    "id": "FLD-04",
+    "title": "Подтверждение удаления папки",
+    "module": "Folders",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Создать папку",
+      "Нажать «Delete <имя>»",
+      "Нажать «Delete»"
+    ],
+    "expected": "Сообщение «Deleted». Папки нет в списке.",
+    "requirement": "ТЗ E2E: «подтвердил и удалилось»",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_confirming_folder_deletion_removes_it"
+  },
+  {
+    "id": "FLD-05",
+    "title": "Рекурсивное удаление папки с содержимым",
+    "module": "Folders",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "inside.txt внутри папки",
+    "steps": [
+      "Создать папку и загрузить в неё файл",
+      "Вернуться на уровень выше, нажать «Delete <имя>»",
+      "Подтвердить",
+      "Создать папку с тем же именем и зайти в неё"
+    ],
+    "expected": "2: предупреждение, что удалится содержимое. 3: папки нет. 4: новая папка пустая — файл удалён, а не скрыт.",
+    "requirement": "ТЗ Files: рекурсивное удаление",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_deleting_folder_takes_its_contents"
+  },
+  {
+    "id": "FLD-06",
+    "title": "Переименование папки",
+    "module": "Folders",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "e2e-before-<id> → e2e-after-<id>",
+    "steps": [
+      "Создать папку",
+      "Переименовать"
+    ],
+    "expected": "Сообщение «Renamed». Новое имя в списке, старого нет.",
+    "requirement": "ТЗ E2E: переименование",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_folders.py::test_rename_folder"
+  },
+  {
+    "id": "FLD-07",
+    "title": "Переименование папки в занятое имя",
+    "module": "Folders",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "папки A и B",
+    "steps": [
+      "Создать папки A и B",
+      "Переименовать A в B"
+    ],
+    "expected": "Ошибка. Обе папки на месте, содержимое B не затронуто.",
+    "requirement": "ТЗ Files: без перезаписи",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FLD-08",
+    "title": "Переименованная папка сохраняет содержимое",
+    "module": "Folders",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "файл внутри папки",
+    "steps": [
+      "Создать папку с файлом",
+      "Переименовать папку",
+      "Зайти в неё"
+    ],
+    "expected": "Файл на месте внутри папки с новым именем.",
+    "requirement": "ТЗ Files: переименование (S3: копирование ключей)",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FLD-09",
+    "title": "Недопустимые имена папок",
+    "module": "Folders",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "«..», «a/b», «a\\b», имя из 121 символа",
+    "steps": [
+      "Создать папку с каждым значением"
+    ],
+    "expected": "Для каждого — понятная ошибка или ответ 400. Папка не создана, выхода из рабочей папки нет.",
+    "requirement": "ТЗ Files: санитизация имён",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_paths.py"
+  },
+  {
+    "id": "FLD-10",
+    "title": "Пустое имя папки",
+    "module": "Folders",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "«» и «   »",
+    "steps": [
+      "Создать папку без имени",
+      "Создать папку из пробелов"
+    ],
+    "expected": "Ошибка, папка не создана.",
+    "requirement": "ТЗ Files: санитизация имён",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FIL-01",
+    "title": "Загрузка одного файла с именем на кириллице",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "e2e-отчёт-<id>.txt",
+    "steps": [
+      "Выбрать файл в диалоге загрузки",
+      "Нажать загрузку"
+    ],
+    "expected": "Сообщение «Uploaded files: 1». Файл в списке, имя отображается правильно, тип file.",
+    "requirement": "ТЗ E2E: загрузка",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_uploaded_file_shows_up_in_listing"
+  },
+  {
+    "id": "FIL-02",
+    "title": "Загрузка нескольких файлов за раз",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "два .txt файла",
+    "steps": [
+      "Выбрать два файла",
+      "Нажать загрузку"
+    ],
+    "expected": "Сообщение «Uploaded files: 2». Оба файла в списке.",
+    "requirement": "ТЗ E2E: несколько файлов",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_upload_several_files_at_once"
+  },
+  {
+    "id": "FIL-03",
+    "title": "Загрузка без выбранного файла",
+    "module": "Files",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Нажать загрузку, не выбрав файл"
+    ],
+    "expected": "Форма не отправлена или показана ошибка. Не 500.",
+    "requirement": "ТЗ Files: загрузка",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FIL-04",
+    "title": "Файл больше лимита",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/; известен FILE_MANAGER_MAX_FILE_SIZE",
+    "data": "файл на 1 КБ больше лимита",
+    "steps": [
+      "Загрузить файл"
+    ],
+    "expected": "Сообщение «…larger than the allowed…». Файла нет в списке. Не 500.",
+    "requirement": "ТЗ E2E: лимит размера",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_file_over_limit_is_refused_with_clear_error"
+  },
+  {
+    "id": "FIL-05",
+    "title": "Файл ровно на лимите",
+    "module": "Files",
+    "priority": "P3",
+    "type": "Edge",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/; известен FILE_MANAGER_MAX_FILE_SIZE",
+    "data": "файл размером ровно в лимит",
+    "steps": [
+      "Загрузить файл"
+    ],
+    "expected": "Файл загружен и есть в списке.",
+    "requirement": "ТЗ Files: лимит размера",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FIL-06",
+    "title": "Превышение общего лимита хранилища",
+    "module": "Files",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/; стек поднят с маленьким FILE_MANAGER_MAX_TOTAL_SIZE",
+    "data": "файл, выводящий объём за общий лимит",
+    "steps": [
+      "Загрузить файл"
+    ],
+    "expected": "Понятная ошибка о превышении общего объёма. Файл не сохранён.",
+    "requirement": "ТЗ Files: суммарный лимит",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_views.py"
+  },
+  {
+    "id": "FIL-07",
+    "title": "Файл с занятым именем не перезаписывается",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "одно имя, разное содержимое",
+    "steps": [
+      "Загрузить файл с содержимым «first version»",
+      "Загрузить файл с тем же именем и содержимым «second version»",
+      "Скачать файл"
+    ],
+    "expected": "Сообщение «already exists». Файл один, скачанное содержимое — «first version».",
+    "requirement": "ТЗ Files: без тихой перезаписи",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_file_with_taken_name_is_not_overwritten"
+  },
+  {
+    "id": "FIL-08",
+    "title": "Переименование файла",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "e2e-before-<id>.txt → e2e-after-<id>.txt",
+    "steps": [
+      "Загрузить файл",
+      "Переименовать"
+    ],
+    "expected": "Новое имя в списке, старого нет.",
+    "requirement": "ТЗ E2E: переименование",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_rename_file"
+  },
+  {
+    "id": "FIL-09",
+    "title": "Переименование файла в занятое имя",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "файлы a.txt и b.txt",
+    "steps": [
+      "Загрузить оба файла",
+      "Переименовать a.txt в b.txt"
+    ],
+    "expected": "Ошибка. Оба файла на месте, содержимое b.txt не изменилось.",
+    "requirement": "ТЗ Files: без перезаписи",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "FIL-10",
+    "title": "Переименование в недопустимое имя",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "«../x.txt», «a/b.txt»",
+    "steps": [
+      "Загрузить файл",
+      "Переименовать в каждое значение"
+    ],
+    "expected": "Ошибка или 400. Файл остался с исходным именем в рабочей папке.",
+    "requirement": "ТЗ Files: path traversal",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_paths.py"
+  },
+  {
+    "id": "FIL-11",
+    "title": "Скачивание файла",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "файл с известным содержимым",
+    "steps": [
+      "Загрузить файл",
+      "Нажать на его имя"
+    ],
+    "expected": "Браузер начал скачивание. Имя скачанного файла и содержимое совпадают с загруженным.",
+    "requirement": "ТЗ E2E: скачивание",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_download_returns_the_same_file"
+  },
+  {
+    "id": "FIL-12",
+    "title": "HTML-файл скачивается, а не открывается",
+    "module": "Files",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "page.html с <script>",
+    "steps": [
+      "Загрузить файл",
+      "Нажать на его имя"
+    ],
+    "expected": "Сработало скачивание, страница не отрисована и скрипт не выполнен. Заголовки: Content-Disposition: attachment, X-Content-Type-Options: nosniff.",
+    "requirement": "ТЗ Files: MIME/расширения",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_views.py"
+  },
+  {
+    "id": "FIL-13",
+    "title": "Отмена удаления файла",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Загрузить файл",
+      "Нажать «Delete <имя>»",
+      "Нажать отмену"
+    ],
+    "expected": "Файл остался в списке.",
+    "requirement": "ТЗ E2E: «отменил и осталось»",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_cancelling_file_deletion_keeps_it"
+  },
+  {
+    "id": "FIL-14",
+    "title": "Подтверждение удаления файла",
+    "module": "Files",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Загрузить файл",
+      "Нажать «Delete <имя>»",
+      "Нажать «Delete»"
+    ],
+    "expected": "Файла нет в списке.",
+    "requirement": "ТЗ E2E: «подтвердил и удалилось»",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/test_files.py::test_confirming_file_deletion_removes_it"
+  },
+  {
+    "id": "FIL-15",
+    "title": "Скачивание удалённого файла по старой ссылке",
+    "module": "Files",
+    "priority": "P3",
+    "type": "Negative",
+    "preconditions": "Выполнен вход; открыта своя папка e2e-workspace-<id> в /files/",
+    "data": "—",
+    "steps": [
+      "Загрузить файл, скопировать ссылку скачивания",
+      "Удалить файл",
+      "Открыть скопированную ссылку"
+    ],
+    "expected": "Ответ 404 или понятная ошибка. Не 500.",
+    "requirement": "ТЗ Files: скачивание",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "SEC-01",
+    "title": "Выход за корень через параметр path",
+    "module": "Security",
+    "priority": "P1",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "?path=../../etc, ?path=..%2F..%2F",
+    "steps": [
+      "Открыть /files/ с каждым значением"
+    ],
+    "expected": "Ответ 400. Содержимое за пределами хранилища не показано.",
+    "requirement": "ТЗ Files: path traversal",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_views.py"
+  },
+  {
+    "id": "SEC-02",
+    "title": "Абсолютный путь и буква диска",
+    "module": "Security",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "?path=/etc, ?path=C:/Windows",
+    "steps": [
+      "Открыть /files/ с каждым значением"
+    ],
+    "expected": "Ответ 400.",
+    "requirement": "ТЗ Files: path traversal",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_paths.py"
+  },
+  {
+    "id": "SEC-03",
+    "title": "Null-байт в пути",
+    "module": "Security",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "?path=docs%00",
+    "steps": [
+      "Открыть адрес"
+    ],
+    "expected": "Ответ 400.",
+    "requirement": "ТЗ Files: имена файлов",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_paths.py"
+  },
+  {
+    "id": "SEC-04",
+    "title": "Скачивание файла за пределами корня",
+    "module": "Security",
+    "priority": "P1",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "/files/download/ с путём ../../etc/passwd",
+    "steps": [
+      "Открыть адрес скачивания с этим путём"
+    ],
+    "expected": "Ответ 400. Файл не отдан.",
+    "requirement": "ТЗ Files: path traversal",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_views.py"
+  },
+  {
+    "id": "SEC-05",
+    "title": "Анонимный POST на загрузку",
+    "module": "Security",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Браузер без активной сессии",
+    "data": "—",
+    "steps": [
+      "Отправить POST на /files/upload/ без сессии"
+    ],
+    "expected": "Перенаправление на вход (302) или 403. Файл не сохранён.",
+    "requirement": "ТЗ Files: анонимный доступ закрыт",
+    "automation": "pytest (app)",
+    "autotest": "tests/test_files_views.py"
+  },
+  {
+    "id": "SEC-06",
+    "title": "Действия с файлами без CSRF-токена",
+    "module": "Security",
+    "priority": "P2",
+    "type": "Security",
+    "preconditions": "Выполнен вход как demo_user",
+    "data": "—",
+    "steps": [
+      "Отправить POST на /files/folder/new/ и /files/delete/ без csrfmiddlewaretoken"
+    ],
+    "expected": "Ответ 403. Изменений в хранилище нет.",
+    "requirement": "Задание 1: CSRF (распространяется на новый раздел)",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "S3-01",
+    "title": "Smoke-набор файлов в режиме S3",
+    "module": "S3",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Стек поднят с FILE_STORAGE_BACKEND=s3 (localstack или реальный бакет)",
+    "data": "—",
+    "steps": [
+      "Прогнать все P1-кейсы модулей FM, FLD, FIL"
+    ],
+    "expected": "Все кейсы проходят так же, как в режиме local, без изменения тестов.",
+    "requirement": "ТЗ E2E: оба режима одним набором",
+    "automation": "E2E (Playwright)",
+    "autotest": "tests/весь набор против стека в режиме s3"
+  },
+  {
+    "id": "S3-02",
+    "title": "Загруженный файл попадает в бакет",
+    "module": "S3",
+    "priority": "P1",
+    "type": "Positive",
+    "preconditions": "Режим s3; выполнен вход",
+    "data": "файл e2e-s3-<id>.txt",
+    "steps": [
+      "Загрузить файл в /files/",
+      "Выполнить aws s3 ls s3://<bucket>/filemanager/ --recursive"
+    ],
+    "expected": "В выводе есть ключ с именем файла под префиксом filemanager/.",
+    "requirement": "ТЗ Files: S3-режим, доказательство деплоя",
+    "automation": "Manual",
+    "autotest": ""
+  },
+  {
+    "id": "S3-03",
+    "title": "Удаление папки удаляет все ключи под префиксом",
+    "module": "S3",
+    "priority": "P2",
+    "type": "Positive",
+    "preconditions": "Режим s3; папка с файлом внутри",
+    "data": "—",
+    "steps": [
+      "Удалить папку через UI",
+      "Проверить бакет aws s3 ls"
+    ],
+    "expected": "Ключей с префиксом этой папки в бакете не осталось.",
+    "requirement": "README: виртуальные папки в S3",
+    "automation": "Manual",
+    "autotest": ""
+  }
+]
