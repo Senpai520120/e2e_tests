@@ -3,3 +3,9 @@ test-results/
 
 # local env
 .env
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
