@@ -1,0 +1,5 @@
+# Playwright
+test-results/
+
+# local env
+.env
