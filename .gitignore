@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Playwright: traces, screenshots and videos of failed tests
+test-results/
+
+# Local settings
+.env
