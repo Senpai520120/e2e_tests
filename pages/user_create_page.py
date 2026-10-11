@@ -21,4 +21,4 @@ class UserCreatePage(BasePage):
         self.username_input.fill(username)
         self.password_input.fill(password)
         self.password_confirmation_input.fill(password)
-        self.create_button.click()
+        self.submit(self.create_button)

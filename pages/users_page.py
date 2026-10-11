@@ -39,8 +39,23 @@ class UsersPage(BasePage):
         self.search(username)
         self.row(username).get_by_role("link", name="Roles").click()
 
+    def user_id(self, username: str) -> str:
+        """The user's number in the database, read from their "Roles" link.
+
+        The link looks like /manage/users/12/roles/, so the number is the
+        fourth part when the address is split by "/".
+        """
+        self.search(username)
+        link = self.row(username).get_by_role("link", name="Roles")
+        href = link.get_attribute("href") or ""
+        return href.split("/")[3]
+
     def deactivate_button(self, username: str):
         return self.row(username).get_by_role("button", name="Deactivate")
+
+    def deactivate(self, username: str) -> None:
+        """Click "Deactivate" in the user's row and wait for the server."""
+        self.submit(self.deactivate_button(username))
 
     def activate_button(self, username: str):
         return self.row(username).get_by_role("button", name="Activate")

@@ -30,5 +30,18 @@ class BasePage:
             "link", name=name, exact=True
         )
 
+    def submit(self, button) -> None:
+        """Click a button that sends a form, and wait for the server's answer.
+
+        Without the wait, the next step of a test can open another page
+        before the form has reached the server, and the action is lost.
+        Fast browsers (WebKit) show this at once. So every Page Object
+        method that sends a form clicks through submit().
+        """
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST"
+        ):
+            button.click()
+
     def sign_out(self) -> None:
-        self.sign_out_button.click()
+        self.submit(self.sign_out_button)

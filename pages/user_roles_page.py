@@ -22,5 +22,12 @@ class UserRolesPage(BasePage):
         """The checkbox of a role: "admin" or "user"."""
         return self.page.get_by_role("checkbox", name=role, exact=True)
 
+    def save(self) -> None:
+        self.submit(self.save_button)
+
+    def role_id(self, role: str) -> str:
+        """The role's number in the database: the value of its checkbox."""
+        return self.role_checkbox(role).get_attribute("value") or ""
+
     def error_message(self, text: str):
         return self.page.get_by_text(text)

@@ -22,4 +22,4 @@ class LoginPage(BasePage):
     def sign_in(self, username: str, password: str) -> None:
         self.username_input.fill(username)
         self.password_input.fill(password)
-        self.sign_in_button.click()
+        self.submit(self.sign_in_button)

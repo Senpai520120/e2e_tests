@@ -55,7 +55,7 @@ class FilesPage(BasePage):
 
     def create_folder(self, name: str) -> None:
         self.new_folder_input.fill(name)
-        self.create_folder_button.click()
+        self.submit(self.create_folder_button)
 
     def open_folder(self, name: str) -> None:
         self.entry(name).click()
@@ -63,7 +63,7 @@ class FilesPage(BasePage):
     def upload(self, *files: Path) -> None:
         """Upload one or several files from the disk."""
         self.file_input.set_input_files(list(files))
-        self.upload_button.click()
+        self.submit(self.upload_button)
 
     def start_delete(self, name: str) -> None:
         """Click "Delete" next to an entry. A confirmation page opens."""
@@ -72,12 +72,12 @@ class FilesPage(BasePage):
     def delete(self, name: str) -> None:
         """Delete an entry and confirm."""
         self.start_delete(name)
-        self.confirm_delete_button.click()
+        self.submit(self.confirm_delete_button)
 
     def rename(self, name: str, new_name: str) -> None:
         self.page.get_by_role("link", name=f"Rename {name}").click()
         self.new_name_input.fill(new_name)
-        self.save_button.click()
+        self.submit(self.save_button)
 
     def breadcrumb(self, name: str):
         """A link in the breadcrumbs, for example "Root"."""
