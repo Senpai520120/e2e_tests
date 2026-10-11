@@ -3,7 +3,9 @@
     "id": "TC-01",
     "title": "Anonymous user is sent to the sign-in page",
     "preconditions": "Not signed in",
-    "steps": ["Open the home page /"],
+    "steps": [
+      "Open the home page /"
+    ],
     "expected": "The address becomes /login/?next=/ and the \"Sign in\" heading is shown.",
     "autotest": "tests/test_login.py::test_01_anonymous_user_is_sent_to_sign_in"
   },
@@ -58,7 +60,10 @@
     "id": "TC-06",
     "title": "User signs out",
     "preconditions": "Signed in as demo_user",
-    "steps": ["Click \"Sign out\" in the header", "Open the home page /"],
+    "steps": [
+      "Click \"Sign out\" in the header",
+      "Open the home page /"
+    ],
     "expected": "The home page is not shown: the address becomes /login/?next=/.",
     "autotest": "tests/test_login.py::test_06_user_signs_out"
   },
@@ -66,7 +71,10 @@
     "id": "TC-07",
     "title": "Header link \"Files\" opens the file manager",
     "preconditions": "Signed in as demo_user",
-    "steps": ["Open the home page /", "Click \"Files\" in the header"],
+    "steps": [
+      "Open the home page /",
+      "Click \"Files\" in the header"
+    ],
     "expected": "The address becomes /files/ and the \"Files\" heading is shown.",
     "autotest": "tests/test_login.py::test_07_header_link_opens_file_manager"
   },
@@ -74,7 +82,9 @@
     "id": "TC-08",
     "title": "Regular user gets \"access denied\" on the admin panel",
     "preconditions": "Signed in as demo_user (no admin role)",
-    "steps": ["Open /manage/"],
+    "steps": [
+      "Open /manage/"
+    ],
     "expected": "The page \"403 — access denied\" is shown instead of the user list.",
     "autotest": "tests/test_access.py::test_08_regular_user_gets_403_on_admin_panel"
   },
@@ -82,7 +92,9 @@
     "id": "TC-09",
     "title": "Admin opens the admin panel",
     "preconditions": "Signed in as demo_admin",
-    "steps": ["Open /manage/"],
+    "steps": [
+      "Open /manage/"
+    ],
     "expected": "The \"Users\" page opens with the user list; demo_admin is in it.",
     "autotest": "tests/test_access.py::test_09_admin_opens_admin_panel"
   },
@@ -90,7 +102,10 @@
     "id": "TC-10",
     "title": "Regular user does not see admin links in the header",
     "preconditions": "Signed in as demo_user",
-    "steps": ["Open the home page /", "Look at the links in the header"],
+    "steps": [
+      "Open the home page /",
+      "Look at the links in the header"
+    ],
     "expected": "\"Files\" is shown. \"Users\", \"Roles\" and \"Audit\" are not shown.",
     "autotest": "tests/test_access.py::test_10_regular_user_does_not_see_admin_links"
   },
@@ -98,7 +113,9 @@
     "id": "TC-11",
     "title": "Anonymous user cannot open the file manager",
     "preconditions": "Not signed in",
-    "steps": ["Open /files/"],
+    "steps": [
+      "Open /files/"
+    ],
     "expected": "The address becomes /login/?next=/files/; no files are shown.",
     "autotest": "tests/test_access.py::test_11_anonymous_user_cannot_open_file_manager"
   },
@@ -252,7 +269,10 @@
     "id": "TC-24",
     "title": "Folder with a taken name is not created twice",
     "preconditions": "Signed in. An empty working folder is open in /files/",
-    "steps": ["Create a folder", "Create a folder with the same name again"],
+    "steps": [
+      "Create a folder",
+      "Create a folder with the same name again"
+    ],
     "expected": "A message with \"already exists\" is shown. There is only one folder with that name.",
     "autotest": "tests/test_folders.py::test_24_folder_with_taken_name_is_not_created_twice"
   },
@@ -318,7 +338,9 @@
     "id": "TC-30",
     "title": "Download returns the same file",
     "preconditions": "Signed in. A file with known content is uploaded to the working folder",
-    "steps": ["Click the file name"],
+    "steps": [
+      "Click the file name"
+    ],
     "expected": "The browser downloads a file with the same name and the same content.",
     "autotest": "tests/test_files.py::test_30_download_returns_same_file"
   },
@@ -346,10 +368,10 @@
   },
   {
     "id": "TC-33",
-    "title": "File over the size limit is rejected",
+    "title": "File one byte over the size limit is rejected",
     "preconditions": "Signed in. An empty working folder is open in /files/. The size limit is known (5 MB in docker-compose)",
     "steps": [
-      "Choose a file 1 KB bigger than the limit",
+      "Choose a file 1 byte bigger than the limit",
       "Click \"Upload\""
     ],
     "expected": "A message with \"is larger than the allowed\" is shown. The file is not in the list.",
@@ -366,5 +388,101 @@
     ],
     "expected": "Step 2 shows a message with \"already exists\". The downloaded file contains \"first version\".",
     "autotest": "tests/test_files.py::test_34_file_with_taken_name_is_not_overwritten"
+  },
+  {
+    "id": "TC-35",
+    "title": "Regular user cannot change roles by a direct request",
+    "preconditions": "Signed in as demo_user (no admin role). The roles form is hidden from this user",
+    "steps": [
+      "Send the roles form of demo_user straight to the server (POST /manage/users/<id>/roles/) with the admin role ticked and a valid CSRF token"
+    ],
+    "expected": "The server answers 403 with the page \"403 — access denied\". demo_user still has no admin role.",
+    "autotest": "tests/test_access.py::test_35_regular_user_cannot_change_roles_by_direct_request"
+  },
+  {
+    "id": "TC-36",
+    "title": "Regular user cannot switch a user off by a direct request",
+    "preconditions": "Signed in as demo_user. Another active user exists",
+    "steps": [
+      "Send \"Deactivate\" for that user straight to the server (POST /manage/users/<id>/toggle-active/) with a valid CSRF token"
+    ],
+    "expected": "The server answers 403 with the page \"403 — access denied\". The user is still active.",
+    "autotest": "tests/test_access.py::test_36_regular_user_cannot_deactivate_user_by_direct_request"
+  },
+  {
+    "id": "TC-37",
+    "title": "Admin cannot switch off their own account",
+    "preconditions": "Signed in as demo_admin",
+    "steps": [
+      "Open /manage/ and find demo_admin",
+      "Click \"Deactivate\" in the demo_admin row"
+    ],
+    "expected": "The message \"You cannot switch yourself off.\" is shown. demo_admin stays active.",
+    "autotest": "tests/test_users.py::test_37_admin_cannot_deactivate_themselves"
+  },
+  {
+    "id": "TC-38",
+    "title": "Signed-in user loses access as soon as they are switched off",
+    "preconditions": "A user is signed in in one browser. An admin is signed in in another browser",
+    "steps": [
+      "Admin: click \"Deactivate\" for that user",
+      "User: open the home page /"
+    ],
+    "expected": "The user is sent to /login/?next=/ without signing out by hand.",
+    "autotest": "tests/test_users.py::test_38_deactivated_user_is_signed_out_at_once"
+  },
+  {
+    "id": "TC-39",
+    "title": "Revoking a role is written to the audit log",
+    "preconditions": "Signed in as demo_admin. A user with the \"user\" role exists",
+    "steps": [
+      "Untick \"user\" in the user's roles form and save",
+      "Open /manage/audit/"
+    ],
+    "expected": "The newest record shows: who = demo_admin, action = revoked, role = user, to whom = the user.",
+    "autotest": "tests/test_roles.py::test_39_role_revoke_is_written_to_audit_log"
+  },
+  {
+    "id": "TC-40",
+    "title": "Switching a user off is written to the audit log",
+    "preconditions": "Signed in as demo_admin. An active user exists",
+    "steps": [
+      "Click \"Deactivate\" for the user",
+      "Open /manage/audit/"
+    ],
+    "expected": "The newest record is about this user. Known bug #142: the app does not record this yet; the test is marked xfail.",
+    "autotest": "tests/test_roles.py::test_40_user_deactivation_is_written_to_audit_log"
+  },
+  {
+    "id": "TC-41",
+    "title": "File exactly at the size limit is accepted",
+    "preconditions": "Signed in. An empty working folder is open in /files/. The size limit is known (5 MB in docker-compose)",
+    "steps": [
+      "Choose a file exactly as big as the limit",
+      "Click \"Upload\""
+    ],
+    "expected": "\"Uploaded files: 1.\" is shown and the file is in the list. Together with TC-33 this checks both sides of the limit.",
+    "autotest": "tests/test_files.py::test_41_file_exactly_at_size_limit_is_accepted"
+  },
+  {
+    "id": "TC-42",
+    "title": "Path that climbs out of the storage is refused",
+    "preconditions": "Signed in as demo_user",
+    "steps": [
+      "Open /files/?path=../.."
+    ],
+    "expected": "The server answers 400. No file list is shown.",
+    "autotest": "tests/test_files.py::test_42_path_outside_storage_is_refused"
+  },
+  {
+    "id": "TC-43",
+    "title": "Sign-in does not send the user to another site",
+    "preconditions": "Not signed in",
+    "steps": [
+      "Open /login/?next=https://evil.example/",
+      "Sign in as demo_user"
+    ],
+    "expected": "The home page of the app opens. The address is not evil.example.",
+    "autotest": "tests/test_login.py::test_43_sign_in_does_not_send_user_to_another_site"
   }
 ]

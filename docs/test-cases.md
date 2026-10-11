@@ -433,13 +433,13 @@ Generated from `tools/test_cases.json` by `python tools/create_test_case_issues.
 
 **Automated test:** `tests/test_files.py::test_32_delete_file_after_confirmation`
 
-## TC-33. File over the size limit is rejected
+## TC-33. File one byte over the size limit is rejected
 
 **Preconditions:** Signed in. An empty working folder is open in /files/. The size limit is known (5 MB in docker-compose)
 
 **Steps:**
 
-1. Choose a file 1 KB bigger than the limit
+1. Choose a file 1 byte bigger than the limit
 2. Click "Upload"
 
 **Expected result:** A message with "is larger than the allowed" is shown. The file is not in the list.
@@ -459,3 +459,117 @@ Generated from `tools/test_cases.json` by `python tools/create_test_case_issues.
 **Expected result:** Step 2 shows a message with "already exists". The downloaded file contains "first version".
 
 **Automated test:** `tests/test_files.py::test_34_file_with_taken_name_is_not_overwritten`
+
+## TC-35. Regular user cannot change roles by a direct request
+
+**Preconditions:** Signed in as demo_user (no admin role). The roles form is hidden from this user
+
+**Steps:**
+
+1. Send the roles form of demo_user straight to the server (POST /manage/users/<id>/roles/) with the admin role ticked and a valid CSRF token
+
+**Expected result:** The server answers 403 with the page "403 — access denied". demo_user still has no admin role.
+
+**Automated test:** `tests/test_access.py::test_35_regular_user_cannot_change_roles_by_direct_request`
+
+## TC-36. Regular user cannot switch a user off by a direct request
+
+**Preconditions:** Signed in as demo_user. Another active user exists
+
+**Steps:**
+
+1. Send "Deactivate" for that user straight to the server (POST /manage/users/<id>/toggle-active/) with a valid CSRF token
+
+**Expected result:** The server answers 403 with the page "403 — access denied". The user is still active.
+
+**Automated test:** `tests/test_access.py::test_36_regular_user_cannot_deactivate_user_by_direct_request`
+
+## TC-37. Admin cannot switch off their own account
+
+**Preconditions:** Signed in as demo_admin
+
+**Steps:**
+
+1. Open /manage/ and find demo_admin
+2. Click "Deactivate" in the demo_admin row
+
+**Expected result:** The message "You cannot switch yourself off." is shown. demo_admin stays active.
+
+**Automated test:** `tests/test_users.py::test_37_admin_cannot_deactivate_themselves`
+
+## TC-38. Signed-in user loses access as soon as they are switched off
+
+**Preconditions:** A user is signed in in one browser. An admin is signed in in another browser
+
+**Steps:**
+
+1. Admin: click "Deactivate" for that user
+2. User: open the home page /
+
+**Expected result:** The user is sent to /login/?next=/ without signing out by hand.
+
+**Automated test:** `tests/test_users.py::test_38_deactivated_user_is_signed_out_at_once`
+
+## TC-39. Revoking a role is written to the audit log
+
+**Preconditions:** Signed in as demo_admin. A user with the "user" role exists
+
+**Steps:**
+
+1. Untick "user" in the user's roles form and save
+2. Open /manage/audit/
+
+**Expected result:** The newest record shows: who = demo_admin, action = revoked, role = user, to whom = the user.
+
+**Automated test:** `tests/test_roles.py::test_39_role_revoke_is_written_to_audit_log`
+
+## TC-40. Switching a user off is written to the audit log
+
+**Preconditions:** Signed in as demo_admin. An active user exists
+
+**Steps:**
+
+1. Click "Deactivate" for the user
+2. Open /manage/audit/
+
+**Expected result:** The newest record is about this user. Known bug #142: the app does not record this yet; the test is marked xfail.
+
+**Automated test:** `tests/test_roles.py::test_40_user_deactivation_is_written_to_audit_log`
+
+## TC-41. File exactly at the size limit is accepted
+
+**Preconditions:** Signed in. An empty working folder is open in /files/. The size limit is known (5 MB in docker-compose)
+
+**Steps:**
+
+1. Choose a file exactly as big as the limit
+2. Click "Upload"
+
+**Expected result:** "Uploaded files: 1." is shown and the file is in the list. Together with TC-33 this checks both sides of the limit.
+
+**Automated test:** `tests/test_files.py::test_41_file_exactly_at_size_limit_is_accepted`
+
+## TC-42. Path that climbs out of the storage is refused
+
+**Preconditions:** Signed in as demo_user
+
+**Steps:**
+
+1. Open /files/?path=../..
+
+**Expected result:** The server answers 400. No file list is shown.
+
+**Automated test:** `tests/test_files.py::test_42_path_outside_storage_is_refused`
+
+## TC-43. Sign-in does not send the user to another site
+
+**Preconditions:** Not signed in
+
+**Steps:**
+
+1. Open /login/?next=https://evil.example/
+2. Sign in as demo_user
+
+**Expected result:** The home page of the app opens. The address is not evil.example.
+
+**Automated test:** `tests/test_login.py::test_43_sign_in_does_not_send_user_to_another_site`
