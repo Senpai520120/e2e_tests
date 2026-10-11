@@ -41,32 +41,42 @@ def user_page(page: Page) -> Page:
     return sign_in(page, config.REGULAR_USER)
 
 
+@pytest.fixture
+def admin_browser(new_context) -> Page:
+    """A second, separate browser signed in as demo_admin.
+
+    For tests where the test's own tab is signed in as somebody else:
+    for example, demo_user tries something in `user_page` while the admin
+    checks the result here.
+    """
+    return sign_in(new_context().new_page(), config.ADMIN)
+
+
 # --- a fresh user for tests that change roles or switch a user off ---
 
 
 @pytest.fixture
-def new_user(new_context):
+def new_user(admin_browser: Page):
     """Create a brand-new user through the panel, give it to the test.
 
     Why not use demo_user? If a test changes demo_user and then fails,
     demo_user stays broken and the next tests fail too. A new user per test
     keeps every test independent.
 
-    The user is created in a separate browser signed in as admin, so the test's
+    The user is created in the separate admin browser, so the test's
     own `page` / `admin_page` stays untouched.
     """
-    admin_tab = sign_in(new_context().new_page(), config.ADMIN)
     user = User(unique_name("user"), config.NEW_USER_PASSWORD)
-    UserCreatePage(admin_tab).open().create_user(user.username, user.password)
+    UserCreatePage(admin_browser).open().create_user(user.username, user.password)
 
     yield user
 
     # Cleanup. The panel cannot delete users, so we switch the user off:
     # then nobody can sign in with this test account.
-    users_page = UsersPage(admin_tab).open()
+    users_page = UsersPage(admin_browser).open()
     users_page.search(user.username)
     if users_page.deactivate_button(user.username).count() > 0:
-        users_page.deactivate_button(user.username).click()
+        users_page.deactivate(user.username)
 
 
 # --- file manager ---

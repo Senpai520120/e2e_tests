@@ -4,7 +4,7 @@ Every test gets its own empty folder from the `workspace` fixture
 and works inside it. Test files are made on the fly with `make_file`.
 """
 
-from playwright.sync_api import expect
+from playwright.sync_api import Page, expect
 
 import config
 from helpers import unique_name
@@ -71,9 +71,9 @@ def test_32_delete_file_after_confirmation(files_page: FilesPage, workspace, mak
 def test_33_file_over_size_limit_is_rejected(
     files_page: FilesPage, workspace, tmp_path
 ):
-    """TC-33: a file bigger than the limit is refused with a clear message."""
+    """TC-33: a file one byte bigger than the limit is refused with a clear message."""
     big_file = tmp_path / "too_big.bin"
-    big_file.write_bytes(b"0" * (config.MAX_FILE_SIZE + 1024))
+    big_file.write_bytes(b"0" * (config.MAX_FILE_SIZE + 1))
 
     files_page.upload(big_file)
 
@@ -100,3 +100,31 @@ def test_34_file_with_taken_name_is_not_overwritten(
         files_page.entry("same_name.txt").click()
     with open(download_info.value.path(), encoding="utf-8") as downloaded:
         assert downloaded.read() == "first version"
+
+
+def test_41_file_exactly_at_size_limit_is_accepted(
+    files_page: FilesPage, workspace, tmp_path
+):
+    """TC-41: a file exactly as big as the limit is uploaded.
+
+    Together with TC-33 (limit + 1 byte is refused) this checks both sides
+    of the limit.
+    """
+    file_at_limit = tmp_path / "exactly_limit.bin"
+    file_at_limit.write_bytes(b"0" * config.MAX_FILE_SIZE)
+
+    files_page.upload(file_at_limit)
+
+    expect(files_page.status_message).to_contain_text("Uploaded files: 1.")
+    expect(files_page.entry("exactly_limit.bin")).to_be_visible()
+
+
+def test_42_path_outside_storage_is_refused(user_page: Page):
+    """TC-42: a folder path that climbs out of the storage ("../..") is refused.
+
+    The request goes straight to the server with the user's session.
+    """
+    response = user_page.request.get("/files/?path=../..")
+
+    assert response.status == 400
+    assert "<h1>Files</h1>" not in response.text()  # no file list is shown

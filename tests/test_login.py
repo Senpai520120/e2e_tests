@@ -84,3 +84,17 @@ def test_07_header_link_opens_file_manager(user_page: Page):
 
     expect(user_page).to_have_url(re.compile(r"/files/$"))
     expect(FilesPage(user_page).heading).to_be_visible()
+
+
+def test_43_sign_in_does_not_send_user_to_another_site(page: Page):
+    """TC-43: a link with ?next= pointing to another site does not take the user there.
+
+    After sign-in the app goes to the address in ?next=. If it trusted any
+    address, a fake link could send users to a lookalike site.
+    """
+    page.goto("/login/?next=https://evil.example/")
+
+    LoginPage(page).sign_in(config.REGULAR_USER.username, config.REGULAR_USER.password)
+
+    expect(HomePage(page).heading).to_be_visible()
+    expect(page).not_to_have_url(re.compile("evil.example"))

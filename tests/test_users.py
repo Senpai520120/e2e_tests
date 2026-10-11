@@ -1,9 +1,11 @@
 """Admin panel: searching, creating and switching off users."""
 
+import re
+
 from playwright.sync_api import Page, expect
 
 import config
-from helpers import unique_name
+from helpers import sign_in, unique_name
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.user_create_page import UserCreatePage
@@ -62,7 +64,7 @@ def test_16_deactivated_user_cannot_sign_in(admin_page: Page, new_user, new_cont
     users_page = UsersPage(admin_page).open()
     users_page.search(new_user.username)
 
-    users_page.deactivate_button(new_user.username).click()
+    users_page.deactivate(new_user.username)
 
     expect(users_page.status_message).to_contain_text(
         f"User {new_user.username} disabled."
@@ -74,3 +76,29 @@ def test_16_deactivated_user_cannot_sign_in(admin_page: Page, new_user, new_cont
     login_page = LoginPage(other_browser).open()
     login_page.sign_in(new_user.username, new_user.password)
     expect(login_page.error_message).to_be_visible()
+
+
+def test_37_admin_cannot_deactivate_themselves(admin_page: Page):
+    """TC-37: an admin cannot switch off their own account."""
+    users_page = UsersPage(admin_page).open()
+    users_page.search(config.ADMIN.username)
+
+    users_page.deactivate(config.ADMIN.username)
+
+    expect(users_page.status_message).to_contain_text("You cannot switch yourself off.")
+    expect(users_page.deactivate_button(config.ADMIN.username)).to_be_visible()
+
+
+def test_38_deactivated_user_is_signed_out_at_once(
+    page: Page, new_user, admin_browser: Page
+):
+    """TC-38: a signed-in user loses access as soon as an admin switches them off."""
+    sign_in(page, new_user)
+    expect(HomePage(page).heading).to_be_visible()
+    users_page = UsersPage(admin_browser).open()
+    users_page.search(new_user.username)
+
+    users_page.deactivate(new_user.username)
+
+    page.goto("/")
+    expect(page).to_have_url(re.compile(r"/login/\?next=/$"))

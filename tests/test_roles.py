@@ -1,5 +1,6 @@
 """Admin panel: granting and revoking roles, the audit log, the roles page."""
 
+import pytest
 from playwright.sync_api import Page, expect
 
 import config
@@ -16,7 +17,7 @@ def test_17_admin_grants_admin_role(admin_page: Page, new_user):
     roles_form = UserRolesPage(admin_page)
 
     roles_form.role_checkbox("admin").check()
-    roles_form.save_button.click()
+    roles_form.save()
 
     expect(users_page.status_message).to_contain_text(
         f"Roles of {new_user.username} updated"
@@ -31,11 +32,11 @@ def test_18_admin_revokes_role(admin_page: Page, new_user):
     users_page.open_roles_of(new_user.username)
     roles_form = UserRolesPage(admin_page)
     roles_form.role_checkbox("user").check()
-    roles_form.save_button.click()
+    roles_form.save()
 
     users_page.open_roles_of(new_user.username)
     roles_form.role_checkbox("user").uncheck()
-    roles_form.save_button.click()
+    roles_form.save()
 
     users_page.search(new_user.username)
     expect(users_page.role_badge(new_user.username, "user")).to_have_count(0)
@@ -61,7 +62,7 @@ def test_20_admin_cannot_remove_own_admin_role(admin_page: Page):
     roles_form = UserRolesPage(admin_page)
 
     roles_form.role_checkbox("admin").uncheck()
-    roles_form.save_button.click()
+    roles_form.save()
 
     expect(
         roles_form.error_message("You cannot take the admin role from yourself")
@@ -77,7 +78,7 @@ def test_21_role_change_is_written_to_audit_log(admin_page: Page, new_user):
     users_page.open_roles_of(new_user.username)
     roles_form = UserRolesPage(admin_page)
     roles_form.role_checkbox("user").check()
-    roles_form.save_button.click()
+    roles_form.save()
 
     audit_page = AuditPage(admin_page).open()
 
@@ -96,7 +97,43 @@ def test_22_roles_page_counts_new_member(admin_page: Page, new_user):
     users_page.open_roles_of(new_user.username)
     roles_form = UserRolesPage(admin_page)
     roles_form.role_checkbox("admin").check()
-    roles_form.save_button.click()
+    roles_form.save()
 
     roles_page.open()
     expect(roles_page.members_count_cell("admin")).to_have_text(str(admins_before + 1))
+
+
+def test_39_role_revoke_is_written_to_audit_log(admin_page: Page, new_user):
+    """TC-39: taking a role away adds a "revoked" record to the audit log."""
+    users_page = UsersPage(admin_page).open()
+    users_page.open_roles_of(new_user.username)
+    roles_form = UserRolesPage(admin_page)
+    roles_form.role_checkbox("user").check()
+    roles_form.save()
+
+    users_page.open_roles_of(new_user.username)
+    roles_form.role_checkbox("user").uncheck()
+    roles_form.save()
+
+    audit_page = AuditPage(admin_page).open()
+    expect(audit_page.newest_record_cell(config.ADMIN.username)).to_be_visible()
+    expect(audit_page.newest_record_cell("revoked")).to_be_visible()
+    expect(audit_page.newest_record_cell("user")).to_be_visible()
+    expect(audit_page.newest_record_cell(new_user.username)).to_be_visible()
+
+
+# xfail = "expected to fail". The app does not log this yet (bug #142).
+# strict=True: when the bug is fixed, the test passes and pytest reports it,
+# so we know to remove this marker.
+@pytest.mark.xfail(
+    reason="Bug #142: the audit log does not record deactivation", strict=True
+)
+def test_40_user_deactivation_is_written_to_audit_log(admin_page: Page, new_user):
+    """TC-40: switching a user off adds a record about that user to the audit log."""
+    users_page = UsersPage(admin_page).open()
+    users_page.search(new_user.username)
+
+    users_page.deactivate(new_user.username)
+
+    audit_page = AuditPage(admin_page).open()
+    expect(audit_page.newest_record_cell(new_user.username)).to_be_visible()
